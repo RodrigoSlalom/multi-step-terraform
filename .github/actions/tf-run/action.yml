@@ -1,0 +1,57 @@
+name: Terraform Run
+description: Setup Terraform and run validate or plan for a given directory.
+inputs:
+  working-directory:
+    description: Relative path to the Terraform configuration directory
+    required: true
+  command:
+    description: "validate | plan"
+    required: true
+  terraform-version:
+    description: Terraform CLI version to install
+    required: false
+    default: "1.9.8"
+runs:
+  using: composite
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
+
+    - name: Init (no backend)
+      if: ${{ inputs.command == 'validate' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init -backend=false
+
+    - name: Format check
+      if: ${{ inputs.command == 'validate' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform fmt -check -recursive
+
+    - name: Validate
+      if: ${{ inputs.command == 'validate' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform validate
+
+    - name: Init
+      if: ${{ inputs.command == 'plan' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform init
+
+    - name: Plan
+      if: ${{ inputs.command == 'plan' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set +e
+        terraform plan -detailed-exitcode
+        exit_code=$?
+        set -e
+        # exit code 2 = changes present (not an error)
+        [ "$exit_code" -ne 1 ]

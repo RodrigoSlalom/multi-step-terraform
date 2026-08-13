@@ -1,0 +1,9 @@
+ae-tools
+.specify/templates
+.specify/memory
+CLAUDE.md
+.claude/
+.mcp.json
+.github/copilot-instructions.md
+.github/agents
+.github/prompts
