@@ -15,7 +15,7 @@ runs:
   using: composite
   steps:
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+      uses: hashicorp/setup-terraform@11bd71901bbe5b1630ceea73d27597364c9af683 # v3.1.2
       with:
         terraform_version: ${{ inputs.terraform-version }}
         terraform_wrapper: false
