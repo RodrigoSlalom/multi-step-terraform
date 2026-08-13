@@ -5,7 +5,7 @@ inputs:
     description: Relative path to the Terraform configuration directory
     required: true
   command:
-    description: "validate | plan"
+    description: "validate | plan | apply"
     required: true
   terraform-version:
     description: Terraform CLI version to install
@@ -15,7 +15,7 @@ runs:
   using: composite
   steps:
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+      uses: hashicorp/setup-terraform@11bd71901bbe5b1630ceea73d27597364c9af683 # v3.1.2
       with:
         terraform_version: ${{ inputs.terraform-version }}
         terraform_wrapper: false
@@ -39,7 +39,7 @@ runs:
       run: terraform validate
 
     - name: Init
-      if: ${{ inputs.command == 'plan' }}
+      if: ${{ inputs.command == 'plan' || inputs.command == 'apply' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: terraform init
@@ -55,3 +55,9 @@ runs:
         set -e
         # exit code 2 = changes present (not an error)
         [ "$exit_code" -ne 1 ]
+
+    - name: Apply
+      if: ${{ inputs.command == 'apply' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform apply -auto-approve
