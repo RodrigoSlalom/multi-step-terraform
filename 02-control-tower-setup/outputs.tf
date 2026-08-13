@@ -3,7 +3,7 @@
 
 output "exported_data" {
   description = "Data exported for downstream steps"
-  value       = {
+  value = {
     # Placeholder: add specific outputs here
 
     # control_tower_arn = ...
