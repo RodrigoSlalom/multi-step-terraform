@@ -11,6 +11,14 @@ inputs:
     description: Terraform CLI version to install
     required: false
     default: "1.9.8"
+  global-vars-file:
+    description: Path to global variables file (e.g., ./global-variables.tfvars)
+    required: false
+    default: ""
+  step-vars-file:
+    description: Path to step-specific variables file (e.g., ./step/step-variables.tfvars)
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -49,8 +57,11 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
+        plan_args="-detailed-exitcode"
+        [[ -n "${{ inputs.global-vars-file }}" ]] && plan_args="$plan_args -var-file=${{ inputs.global-vars-file }}"
+        [[ -n "${{ inputs.step-vars-file }}" ]] && plan_args="$plan_args -var-file=${{ inputs.step-vars-file }}"
         set +e
-        terraform plan -detailed-exitcode
+        terraform plan $plan_args
         exit_code=$?
         set -e
         # exit code 2 = changes present (not an error)
@@ -60,13 +71,21 @@ runs:
       if: ${{ inputs.command == 'plan-apply' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: terraform plan -out=tfplan
+      run: |
+        plan_args="-out=tfplan"
+        [[ -n "${{ inputs.global-vars-file }}" ]] && plan_args="$plan_args -var-file=${{ inputs.global-vars-file }}"
+        [[ -n "${{ inputs.step-vars-file }}" ]] && plan_args="$plan_args -var-file=${{ inputs.step-vars-file }}"
+        terraform plan $plan_args
 
     - name: Apply
       if: ${{ inputs.command == 'apply' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: terraform apply -auto-approve
+      run: |
+        apply_args="-auto-approve"
+        [[ -n "${{ inputs.global-vars-file }}" ]] && apply_args="$apply_args -var-file=${{ inputs.global-vars-file }}"
+        [[ -n "${{ inputs.step-vars-file }}" ]] && apply_args="$apply_args -var-file=${{ inputs.step-vars-file }}"
+        terraform apply $apply_args
 
     - name: Apply
       if: ${{ inputs.command == 'plan-apply' }}
