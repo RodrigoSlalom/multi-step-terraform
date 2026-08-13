@@ -1,3 +1,3 @@
 output "step" {
-  value = "step two.1"
+  value = "step two.2"
 }
