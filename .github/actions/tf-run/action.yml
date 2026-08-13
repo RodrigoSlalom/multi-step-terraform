@@ -5,7 +5,7 @@ inputs:
     description: Relative path to the Terraform configuration directory
     required: true
   command:
-    description: "validate | plan | apply"
+    description: "validate | plan | apply | plan-apply"
     required: true
   terraform-version:
     description: Terraform CLI version to install
@@ -39,7 +39,7 @@ runs:
       run: terraform validate
 
     - name: Init
-      if: ${{ inputs.command == 'plan' || inputs.command == 'apply' }}
+      if: ${{ inputs.command == 'plan' || inputs.command == 'apply' || inputs.command == 'plan-apply' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: terraform init
@@ -56,8 +56,20 @@ runs:
         # exit code 2 = changes present (not an error)
         [ "$exit_code" -ne 1 ]
 
+    - name: Plan
+      if: ${{ inputs.command == 'plan-apply' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform plan -out=tfplan
+
     - name: Apply
       if: ${{ inputs.command == 'apply' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: terraform apply -auto-approve
+
+    - name: Apply
+      if: ${{ inputs.command == 'plan-apply' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: terraform apply -auto-approve tfplan
