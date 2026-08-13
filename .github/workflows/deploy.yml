@@ -17,8 +17,28 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy
+  plan-step-01:
+    name: Plan / 01-step-one
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # Add your cloud provider OIDC step here when switching to remote state
+
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 01-step-one
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+
+  apply-step-01:
+    name: Apply / 01-step-one
+    needs: plan-step-01
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -28,40 +48,52 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      # Add your cloud provider OIDC step here when switching to remote state, e.g.:
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@<sha> # vX.Y.Z
-      #   with:
-      #     role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-      #     aws-region: ${{ vars.AWS_REGION }}
+      # Add your cloud provider OIDC step here when switching to remote state
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v4.0.1
+      - name: Apply
+        uses: ./.github/actions/tf-run
         with:
-          terraform_version: ${{ vars.TF_VERSION || '1.9.8' }}
-          terraform_wrapper: false
+          working-directory: 01-step-one
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
 
-      - name: Plan and apply all steps
-        run: |
-          for dir in $(find . -maxdepth 1 -type d -name '[0-9][0-9]-*' | sort); do
-            step=$(basename "$dir")
+  plan-step-02:
+    name: Plan / 02-step-two
+    needs: apply-step-01
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-            echo "::group::$step - init"
-            terraform -chdir="$dir" init
-            echo "::endgroup::"
+      # Add your cloud provider OIDC step here when switching to remote state
 
-            echo "::group::$step - plan"
-            set +e
-            terraform -chdir="$dir" plan -detailed-exitcode -out=tfplan
-            plan_exit=$?
-            set -e
-            if [ "$plan_exit" -eq 1 ]; then
-              echo "::error::Plan failed for $step"
-              exit 1
-            fi
-            echo "::endgroup::"
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 02-step-two
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
 
-            echo "::group::$step - apply"
-            terraform -chdir="$dir" apply -auto-approve tfplan
-            echo "::endgroup::"
-          done
+  apply-step-02:
+    name: Apply / 02-step-two
+    needs: plan-step-02
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # Add your cloud provider OIDC step here when switching to remote state
+
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 02-step-two
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
