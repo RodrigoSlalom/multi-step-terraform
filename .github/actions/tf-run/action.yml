@@ -27,9 +27,24 @@ inputs:
     description: AWS region of the state bucket (AWS_BACKEND_REGION repo variable)
     required: false
     default: ""
+  depends-on-step:
+    description: SSM path of the previous step's marker; plan is skipped if the parameter is absent
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
+    - name: Check step dependency
+      id: dep-check
+      if: ${{ inputs.command == 'plan' && inputs.depends-on-step != '' }}
+      shell: bash
+      run: |
+        if aws ssm get-parameter --name "${{ inputs.depends-on-step }}" &>/dev/null; then
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "ready=false" >> "$GITHUB_OUTPUT"
+          echo "::notice::Prerequisite '${{ inputs.depends-on-step }}' not yet in SSM — skipping plan."
+        fi
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v4
       with:
@@ -55,18 +70,18 @@ runs:
       run: terraform validate
 
     - name: Generate backend config
-      if: ${{ inputs.command == 'plan' || inputs.command == 'apply' || inputs.command == 'plan-apply' }}
+      if: ${{ (inputs.command == 'plan' || inputs.command == 'apply' || inputs.command == 'plan-apply') && steps.dep-check.outputs.ready != 'false' }}
       shell: bash
       run: printf 'bucket = "%s"\nregion = "%s"\n' "${{ inputs.backend-bucket }}" "${{ inputs.backend-region }}" > backend.hcl
 
     - name: Init
-      if: ${{ inputs.command == 'plan' || inputs.command == 'apply' || inputs.command == 'plan-apply' }}
+      if: ${{ (inputs.command == 'plan' || inputs.command == 'apply' || inputs.command == 'plan-apply') && steps.dep-check.outputs.ready != 'false' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: terraform init -backend-config=../backend.hcl
 
     - name: Plan
-      if: ${{ inputs.command == 'plan' }}
+      if: ${{ inputs.command == 'plan' && steps.dep-check.outputs.ready != 'false' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |

@@ -1,3 +1,10 @@
+resource "aws_ssm_parameter" "step_applied" {
+  name        = "/organization/automation/steps/07-aft-setup"
+  description = "Marker written when this step has been successfully applied"
+  type        = "String"
+  value       = "applied"
+}
+
 # Writes step outputs to SSM Parameter Store under /landing-zone/aft-setup/
 # Downstream steps read these via: data "aws_ssm_parameter" "<name>" { name = "..." }
 
