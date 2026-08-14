@@ -9,11 +9,6 @@ variable "aws_secondary_regions" {
   default     = []
 }
 
-variable "environment" {
-  description = "Environment name (e.g., prod, staging, poc)"
-  type        = string
-}
-
 variable "organization_name" {
   description = "Organization name"
   type        = string

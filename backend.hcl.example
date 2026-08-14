@@ -1,0 +1,11 @@
+# For LOCAL terraform runs only. In CI this file is generated dynamically from
+# the AWS_BACKEND_BUCKET and AWS_BACKEND_REGION repository variables set by bootstrap.sh.
+#
+# Copy to backend.hcl and fill in values after running 00-prerequisites/bootstrap.sh
+# backend.hcl is git-ignored and must never be committed.
+#
+# bucket name format: <short-region>-<account-id>-organization-tf-statefiles
+# e.g. use1-123456789012-organization-tf-statefiles
+
+bucket = ""
+region = ""

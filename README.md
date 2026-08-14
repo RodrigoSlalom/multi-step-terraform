@@ -1,4 +1,4 @@
-# AWS Landing Zone Terraform Monorepo
+# AWS Landing Zone Terraform Monorepo Template
 
 This repository contains a complete AWS Organizations landing zone deployment using Terraform, structured as a series of sequential, self-contained deployment steps.
 
