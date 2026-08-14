@@ -26,9 +26,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 01-organization-setup
@@ -48,9 +48,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 01-organization-setup
@@ -69,9 +69,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 02-control-tower-setup
@@ -91,9 +91,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 02-control-tower-setup
@@ -112,9 +112,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 03-administration-delegation
@@ -134,9 +134,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 03-administration-delegation
@@ -155,9 +155,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 04-security-tooling
@@ -177,9 +177,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 04-security-tooling
@@ -198,9 +198,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 05-organizational-policies
@@ -220,9 +220,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 05-organizational-policies
@@ -241,9 +241,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 06-identity-center
@@ -263,9 +263,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 06-identity-center
@@ -284,9 +284,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 07-aft-setup
@@ -306,9 +306,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 07-aft-setup
@@ -327,9 +327,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 08-networking-rollout
@@ -349,9 +349,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 08-networking-rollout
@@ -370,9 +370,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Plan
+      - name: Plan
         uses: ./.github/actions/tf-run
         with:
           working-directory: 09-cost-governance
@@ -392,9 +392,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-            - name: Checkout
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-            - name: Apply
+      - name: Apply
         uses: ./.github/actions/tf-run
         with:
           working-directory: 09-cost-governance
