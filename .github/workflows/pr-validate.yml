@@ -8,6 +8,8 @@ on:
       - "**/*.tf"
       - ".github/workflows/pr-validate.yml"
       - ".github/actions/tf-run/**"
+      - "global-variables.tfvars"
+      - "*/step-variables.tfvars"
 
 concurrency:
   group: pr-validate-${{ github.head_ref }}
@@ -17,68 +19,353 @@ permissions:
   contents: read
 
 jobs:
-  validate-step-01:
-    name: Validate / 01-step-one
+  validate-org:
+    name: Validate / 01-organization-setup
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
       - name: Validate
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 01-step-one
+          working-directory: 01-organization-setup
           command: validate
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
 
-  validate-step-02:
-    name: Validate / 02-step-two
+  validate-ct:
+    name: Validate / 02-control-tower-setup
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
       - name: Validate
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 02-step-two
+          working-directory: 02-control-tower-setup
           command: validate
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
 
-  plan-step-01:
-    name: Plan / 01-step-one
-    needs: validate-step-01
+  validate-delegation:
+    name: Validate / 03-administration-delegation
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Plan
+      - name: Validate
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 01-step-one
-          command: plan
+          working-directory: 03-administration-delegation
+          command: validate
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
 
-  plan-step-02:
-    name: Plan / 02-step-two
-    needs: validate-step-02
+  validate-security:
+    name: Validate / 04-security-tooling
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 04-security-tooling
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
 
+  validate-policies:
+    name: Validate / 05-organizational-policies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 05-organizational-policies
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+
+  validate-identity:
+    name: Validate / 06-identity-center
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 06-identity-center
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+
+  validate-aft:
+    name: Validate / 07-aft-setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 07-aft-setup
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+
+  validate-networking:
+    name: Validate / 08-networking-rollout
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 08-networking-rollout
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+
+  validate-cost:
+    name: Validate / 09-cost-governance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 09-cost-governance
+          command: validate
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+
+  plan-org:
+    name: Plan / 01-organization-setup
+    needs: validate-org
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Plan
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 02-step-two
+          working-directory: 01-organization-setup
           command: plan
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-ct:
+    name: Plan / 02-control-tower-setup
+    needs: validate-ct
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 02-control-tower-setup
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/01-organization-setup
+
+  plan-delegation:
+    name: Plan / 03-administration-delegation
+    needs: validate-delegation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 03-administration-delegation
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/02-control-tower-setup
+
+  plan-security:
+    name: Plan / 04-security-tooling
+    needs: validate-security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 04-security-tooling
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/03-administration-delegation
+
+  plan-policies:
+    name: Plan / 05-organizational-policies
+    needs: validate-policies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 05-organizational-policies
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/04-security-tooling
+
+  plan-identity:
+    name: Plan / 06-identity-center
+    needs: validate-identity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 06-identity-center
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/05-organizational-policies
+
+  plan-aft:
+    name: Plan / 07-aft-setup
+    needs: validate-aft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 07-aft-setup
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/06-identity-center
+
+  plan-networking:
+    name: Plan / 08-networking-rollout
+    needs: validate-networking
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 08-networking-rollout
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/07-aft-setup
+
+  plan-cost:
+    name: Plan / 09-cost-governance
+    needs: validate-cost
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 09-cost-governance
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+          depends-on-step: /organization/automation/steps/08-networking-rollout
+

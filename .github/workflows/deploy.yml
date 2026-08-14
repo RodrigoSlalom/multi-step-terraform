@@ -8,6 +8,8 @@ on:
       - "**/*.tf"
       - ".github/workflows/deploy.yml"
       - ".github/actions/tf-run/**"
+      - "global-variables.tfvars"
+      - "*/step-variables.tfvars"
 
 concurrency:
   group: deploy-main
@@ -17,8 +19,8 @@ permissions:
   contents: read
 
 jobs:
-  plan-step-01:
-    name: Plan / 01-step-one
+  plan-org:
+    name: Plan / 01-organization-setup
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,19 +28,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      # Add your cloud provider OIDC step here when switching to remote state
-
       - name: Plan
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 01-step-one
+          working-directory: 01-organization-setup
           command: plan
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
 
-  apply-step-01:
-    name: Apply / 01-step-one
-    needs: plan-step-01
+  apply-org:
+    name: Apply / 01-organization-setup
+    needs: plan-org
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -47,19 +50,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      # Add your cloud provider OIDC step here when switching to remote state
-
       - name: Apply
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 01-step-one
+          working-directory: 01-organization-setup
           command: apply
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
 
-  plan-step-02:
-    name: Plan / 02-step-two
-    needs: apply-step-01
+  plan-ct:
+    name: Plan / 02-control-tower-setup
+    needs: apply-org
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -67,19 +71,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      # Add your cloud provider OIDC step here when switching to remote state
-
       - name: Plan
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 02-step-two
+          working-directory: 02-control-tower-setup
           command: plan
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
 
-  apply-step-02:
-    name: Apply / 02-step-two
-    needs: plan-step-02
+  apply-ct:
+    name: Apply / 02-control-tower-setup
+    needs: plan-ct
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -88,12 +93,315 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      # Add your cloud provider OIDC step here when switching to remote state
-
       - name: Apply
         uses: ./.github/actions/tf-run
         with:
-          working-directory: 02-step-two
+          working-directory: 02-control-tower-setup
           command: apply
           terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-delegation:
+    name: Plan / 03-administration-delegation
+    needs: apply-ct
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 03-administration-delegation
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-delegation:
+    name: Apply / 03-administration-delegation
+    needs: plan-delegation
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 03-administration-delegation
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-security:
+    name: Plan / 04-security-tooling
+    needs: apply-delegation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 04-security-tooling
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-security:
+    name: Apply / 04-security-tooling
+    needs: plan-security
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 04-security-tooling
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-policies:
+    name: Plan / 05-organizational-policies
+    needs: apply-security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 05-organizational-policies
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-policies:
+    name: Apply / 05-organizational-policies
+    needs: plan-policies
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 05-organizational-policies
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-identity:
+    name: Plan / 06-identity-center
+    needs: apply-policies
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 06-identity-center
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-identity:
+    name: Apply / 06-identity-center
+    needs: plan-identity
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 06-identity-center
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-aft:
+    name: Plan / 07-aft-setup
+    needs: apply-identity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 07-aft-setup
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-aft:
+    name: Apply / 07-aft-setup
+    needs: plan-aft
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 07-aft-setup
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-networking:
+    name: Plan / 08-networking-rollout
+    needs: apply-aft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 08-networking-rollout
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-networking:
+    name: Apply / 08-networking-rollout
+    needs: plan-networking
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 08-networking-rollout
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  plan-cost:
+    name: Plan / 09-cost-governance
+    needs: apply-networking
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Plan
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 09-cost-governance
+          command: plan
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
+  apply-cost:
+    name: Apply / 09-cost-governance
+    needs: plan-cost
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Apply
+        uses: ./.github/actions/tf-run
+        with:
+          working-directory: 09-cost-governance
+          command: apply
+          terraform-version: ${{ vars.TF_VERSION || '1.9.8' }}
+          global-vars-file: ../global-variables.tfvars
+          step-vars-file: step-variables.tfvars
+          backend-bucket: ${{ vars.AWS_BACKEND_BUCKET }}
+          backend-region: ${{ vars.AWS_BACKEND_REGION }}
+
